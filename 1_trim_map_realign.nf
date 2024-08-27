@@ -189,60 +189,6 @@ process mark_dup {
     """
 }
 
-// Step 5 - indel realign
-process indel_realign {
-    
-    conda '~/miniconda3/envs/gatk'
-
-    publishDir 'align', saveAs: { filename -> "$filename" }, mode: 'copy'
-    errorStrategy 'ignore'
-
-    input:
-    tuple val(sample), path("${sample}_dedup.bam"), path("${sample}_dedup.bai")
-
-    output:
-    tuple val(sample), path("${sample}_realigned.bam"), path("${sample}_realigned.bam.bai")
-
-    """
-    # find indel realignment intervals - use gatk
-    echo "**** Performing RealignerTargetCreator targets for ${sample} ****"
-    ${params.gatk_java} -Xmx8g -jar ${params.gatk_engine} -T RealignerTargetCreator -R ${params.ref} -I ${sample}_dedup.bam -o ${sample}_dedup.intervals -nt 4
-
-    # perform indel realignment
-    echo "**** Performing IndelRealigner for  ${sample}  ****"
-    ${params.gatk_java} -Xmx8g -jar ${params.gatk_engine} -T IndelRealigner -R ${params.ref} -I ${sample}_dedup.bam -targetIntervals ${sample}_dedup.intervals -o ${sample}_realigned.bam
-
-    ### INDEX
-    echo "**** Running Picard BuildBamIndex on  ${sample} ****"
-    picard BuildBamIndex -I ${sample}_realigned.bam --TMP_DIR ./run_tmp
-    samtools index ${sample}_realigned.bam
-    """
-}
-
-// Step 5a - indel realign with Abra 
-process indel_realign_abra {
-    
-    publishDir 'align', saveAs: { filename -> "$filename" }, mode: 'copy'
-    errorStrategy 'ignore'
-
-    input:
-    tuple val(sample), path("${sample}_dedup.bam"), path("${sample}_dedup.bai")
-
-    output:
-    tuple val(sample), path("${sample}_realigned.bam"), path("${sample}_realigned.bam.bai")
-
-    """
-    mkdir ./abra_tmp
-    export TMPDIR=./abra_tmp
-    abra2 --in ${sample}_dedup.bam --out ${sample}_realigned.bam --ref ${params.ref} --threads 16 --tmpdir ./abra_tmp
-
-    ### INDEX
-    echo "**** Running Picard BuildBamIndex on  ${sample} ****"
-    picard BuildBamIndex -I ${sample}_realigned.bam --TMP_DIR ./run_tmp
-    samtools index ${sample}_realigned.bam
-    """
-}
-
 // Step 6 - calculate  statistics
 process calc_stats {
 
@@ -291,7 +237,5 @@ workflow{
     } \
     | groupTuple(by: 0, sort: true, remainder: true) \
     | merge_sort \
-    | mark_dup \
-    | indel_realign_abra \
-    | calc_stats 
+    | mark_dup | calc_stats 
 }

@@ -77,8 +77,8 @@ process vcf_concat {
     """
 }
 
-// reheader vcf
-process rename {
+// normalise vcf
+process norm {
 
     publishDir 'vcf', saveAs: { filename -> "$filename" }
 
@@ -91,12 +91,36 @@ process rename {
     output:
     tuple \
     val(key), \
+    file ("${key}_norm.vcf.gz"), \
+    file ("${key}_norm.vcf.gz.csi")
+
+    """
+    bcftools norm --fasta-ref ${params.ref} -O z -o ${key}_norm.vcf.gz ${key}_concat.vcf.gz
+    bcftools index ${key}_norm.vcf.gz
+    """
+    
+}
+
+// reheader vcf
+process rename {
+
+    publishDir 'vcf', saveAs: { filename -> "$filename" }
+
+    input:
+    tuple \
+    val(key),
+    file ("${key}_norm.vcf.gz"), \
+    file ("${key}_norm.vcf.gz.csi")
+    
+    output:
+    tuple \
+    val(key), \
     file ("${key}.vcf.gz"), \
     file ("${key}.vcf.gz.csi")
 
     """
-    bcftools query -l ${key}_concat.vcf.gz | xargs -n 1 basename | awk -F '_' '{print \$1}' > samples
-    bcftools reheader -s samples -o ${key}.vcf.gz ${key}_concat.vcf.gz
+    bcftools query -l ${key}_norm.vcf.gz | xargs -n 1 basename | awk -F '_' '{print \$1}' > samples
+    bcftools reheader -s samples -o ${key}.vcf.gz ${key}_norm.vcf.gz
     bcftools index ${key}.vcf.gz
     """
     
@@ -113,5 +137,5 @@ workflow{
         return tuple(key, file)
       }
     | groupTuple( by:0,sort:true ) \
-    | vcf_concat | rename
+    | vcf_concat | norm | rename
 }
