@@ -169,7 +169,7 @@ process merge_sort {
 // Step 4 - mark duplicates
 process mark_dup {
     
-    //publishDir 'align', saveAs: { filename -> "$filename" }
+    publishDir 'align', saveAs: { filename -> "$filename" }
     errorStrategy 'ignore'
 
     input:
@@ -189,7 +189,7 @@ process mark_dup {
     """
 }
 
-// Step 6 - calculate  statistics
+// Step 5 - calculate  statistics
 process calc_stats {
 
     //module 'samtools-uoneasy/1.12-GCC-9.3.0'
