@@ -1,7 +1,7 @@
 # Variant calling pipeline
 
 ### Mark Ravinet 
-### 15/11/2024
+### 20/06/2023
 
 ## Introduction
 
@@ -24,8 +24,6 @@ In addition to these scripts, there are three helper scripts which are optional.
 ## Installation
 
 The simplest way to install everything you need for these scripts to work is to use template `conda` environment. This means you first need to install and setup `conda`. 
-
-**For users working on the Saga infrastructure** you do not need to install `conda`. You can instead follow the guidelines [here](https://github.com/markravinet/markravinet.github.io/wiki/5_using_conda_Saga) to run the pipeline using the shared installed `conda` modules. 
 
 ### Installing conda
 
@@ -210,25 +208,6 @@ nextflow run 2_call_variants.nf --bams bams.list --windows sparrow_genome_window
 ```
 
 As above, you can use the `--ref` option to set the location of a specific reference genome. Furthermore, as with all the scripts, you can use the `-resume` option to rerun from a checkpoint if it fails for any reason.
-
-### Optional - specifying ploidy
-
-In some cases, you might need to specify the ploidy of the chromosomes or scaffolds you are calling in your analysis. A typical example of this is when calling SNPs in the mitochondrial genome (i.e. where ploidy is haploid). The pipeline has now been updated to incorporate this functionality but it is **optional**. This means that if you don't specify a ploidy file to `bcftools` then the pipeline will just assume everything is diploid. 
-
-The basic and easiest way to ensure mtDNA is called as haploid is to provide a file that looks like this in the case of the *Passer domesticus* genome:
-
-```
-mtDNA 1 16809 1 
-```
-
-This ploidy file is space delimited with the chromosome identity, the start position, the end position and the ploidy (where 1 = haploid, 2 = diploid). There is more info (here)[https://samtools.github.io/bcftools/bcftools.html#call] on this format. With the example above, the pipeline will assume all other chromosomes are diploid.
-
-You can then run the pipeline exactly as before but this time with the additional `--ploidyFile` option, e.g:
-
-```
-nextflow run 2_call_variants.nf --bams bams.list --windows sparrow_genome_windows.list \
---ploidyFile my_ploidy_file.txt
-```
 
 ### Script outputs
 
