@@ -25,6 +25,12 @@ Channel
     .fromList( windows_list )
     .set{windows}
 
+// ploidy file for genotyping
+if (!params.ploidyFile){
+    println "No ploidy file provided - all chromosomes to be called as diploid"
+    params.ploidyFile = null
+}
+
 // View results (to test)
 // bams.view()
 // windows.view()
@@ -37,23 +43,43 @@ process genotyping {
 
     input:
     path (bams)
+    path ploidyFile, optional: true
     each windows
 
     output:
     path ("${windows}.vcf.gz")
 
-    """
-    if [[ "${windows}" == "scaff"* ]];
-    then
-        # if window is a scaffold
-        bcftools mpileup -d 8000 --ignore-RG -R ${baseDir}/${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
-        | bcftools call -f GQ,GP -mO z -o ${windows}.vcf.gz
-    else
-         # for normal genome windows
-        bcftools mpileup -d 8000 --ignore-RG -r ${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
-        | bcftools call -f GQ,GP -mO z -o ${windows}.vcf.gz
-    fi
-    """
+    script:
+    if (ploidyFile == null){
+        """
+        echo "Calling with default ploidy"
+        if [[ "${windows}" == "scaff"* ]];
+        then
+            # if window is a scaffold
+            bcftools mpileup -d 8000 --ignore-RG -R ${baseDir}/${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
+            | bcftools call -f GQ,GP -mO z -o ${windows}.vcf.gz
+        else
+            # for normal genome windows
+            bcftools mpileup -d 8000 --ignore-RG -r ${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
+            | bcftools call -f GQ,GP -mO z -o ${windows}.vcf.gz
+        fi
+        """
+    } else {
+        """
+        echo "Calling with specified ploidy"
+        if [[ "${windows}" == "scaff"* ]];
+        then
+            # if window is a scaffold
+            bcftools mpileup -d 8000 --ignore-RG -R ${baseDir}/${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
+            | bcftools call --ploidy-file ${ploidyFile} -f GQ,GP -mO z -o ${windows}.vcf.gz
+        else
+            # for normal genome windows
+            bcftools mpileup -d 8000 --ignore-RG -r ${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
+            | bcftools call --ploidy-file ${ploidyFile} -f GQ,GP -mO z -o ${windows}.vcf.gz
+        fi
+        """
+    }
+  
 }
 
 // concat - based on key value
