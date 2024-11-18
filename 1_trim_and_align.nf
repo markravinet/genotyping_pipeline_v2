@@ -169,7 +169,7 @@ process merge_sort {
 // Step 4 - mark duplicates
 process mark_dup {
     
-    publishDir 'align', saveAs: { filename -> "$filename" }
+    //publishDir 'align', saveAs: { filename -> "$filename" }
     errorStrategy 'ignore'
 
     input:
@@ -189,7 +189,25 @@ process mark_dup {
     """
 }
 
-// Step 5 - calculate  statistics
+// Step 5 - convert to cram
+process cram_convert {
+    
+    publishDir 'align', saveAs: { filename -> "$filename" }
+    errorStrategy 'ignore'
+
+    input:
+    tuple val(sample), path("${sample}_dedup.bam"), path("${sample}_dedup.bai")
+
+    output:
+    tuple val(sample), path("${sample}_dedup.cram"), path("${sample}_dedup.crai")
+
+    """
+    samtools view -T ${params.ref} -C -o ${sample}_dedup.cram ${sample}_dedup.bam
+    samtools index ${sample}_dedup.cram 
+    """
+}
+
+// Step 6 - calculate  statistics
 process calc_stats {
 
     //module 'samtools-uoneasy/1.12-GCC-9.3.0'
@@ -220,7 +238,6 @@ process calc_stats {
     rm ${sample}.head.txt
     """
 
-
 }
 
 // workflow starts here!
@@ -237,5 +254,5 @@ workflow{
     } \
     | groupTuple(by: 0, sort: true, remainder: true) \
     | merge_sort \
-    | mark_dup | calc_stats 
+    | mark_dup | cram_convert | calc_stats 
 }

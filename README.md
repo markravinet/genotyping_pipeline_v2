@@ -1,7 +1,7 @@
 # Variant calling pipeline
 
 ### Mark Ravinet 
-### 15/11/2024
+### 18/11/2024
 
 ## Introduction
 
@@ -87,7 +87,7 @@ Although most of the tools for the pipeline should run without issue, you might 
 
 ## Step 1  - trimming, mapping and aligning
 
-This first script will take your raw reads, trim them for low-quality bases and remove any adapter sequences. It will then map them to a reference genome of your choice (default is the 2014 House sparrow reference). Following this, it will perform realignment around indels using `abra2` to ensure that short insertions or deletions do not cause false positive variant calls. It also ensures that the samples are renamed to the correct name for all downstream analysis. Finally, the script will produce statistics on the mapping efficiency and depth of coverage of each mapped individual. 
+This first script will take your raw reads, trim them for low-quality bases and remove any adapter sequences. It will then map them to a reference genome of your choice (default is the 2014 House sparrow reference). It also ensures that the samples are renamed to the correct name for all downstream analysis. Finally, the script will produce statistics on the mapping efficiency and depth of coverage of each mapped individual. Note that as of November 2024, the pipeline has been updated so that it only outputs [cram files](https://en.wikipedia.org/wiki/CRAM_(file_format)). 
 
 ### The input csv format
 
@@ -144,8 +144,8 @@ Remember the script might not pick up exactly where it left off as it runs from 
 
 Once complete, the script will create two directories with outputs in:
 
-1. `align` - this contains the mapped, realigned and sorted bamfiles with their indexes for each individual you ran the script on.
-2. `stats` - this directory contains statistics from each of the bamfiles for their mapping success and depth of coverage. More information below.
+1. `align` - this contains the mapped, realigned and sorted cramfiles with their indexes for each individual you ran the script on.
+2. `stats` - this directory contains statistics from each of the cramfiles for their mapping success and depth of coverage. More information below.
 
 ## Step 1a - Downsampling bams
 
