@@ -30,6 +30,7 @@ dependencies:
   - cryptography=39.0.0=py38h1724139_0
   - curl=7.87.0=h6312ad2_0
   - expat=2.5.0=h27087fc_0
+  - fastqc=0.12.1=hdfd78af_0
   - fmt=9.1.0=h924138e_0
   - font-ttf-dejavu-sans-mono=2.37=hab24e00_0
   - font-ttf-inconsolata=3.000=h77eed37_0
@@ -199,4 +200,4 @@ dependencies:
   - zlib=1.2.13=h166bdaf_4
   - zstandard=0.19.0=py38h5945529_1
   - zstd=1.5.2=h3eb15da_6
-prefix: /gpfs01/home/mbzmr1/miniconda3
+prefix: /cluster/projects/nn10082k/conda_group/nextflow

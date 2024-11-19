@@ -50,8 +50,15 @@ process trimming {
     path ("${new_sample}.R1.trim_unpair.fastq.gz"), \
     path ("${new_sample}.R2.trim_unpair.fastq.gz"), \
     path ("${new_sample}.stats")
+    path ("${f_read}_fastqc.zip")
+    path ("${r_read}_fastqc.zip")
+
 
     """
+    ## run fastqc
+    fastqc -o ./ $f_read
+    fastqc -o ./ $r_read 
+
     ## set the adapter fasta - need to find a way to change this
     ADAPT_FAST=${params.trim}/${adapter}.fa
     ## run trimmometic
@@ -77,6 +84,8 @@ process align {
     path("${sample}.R1.trim_unpair.fastq.gz"), \
     path("${sample}.R2.trim_unpair.fastq.gz"), \
     path("${sample}.stats")
+    path ("${f_read}_fastqc.zip")
+    path ("${r_read}_fastqc.zip")
 
     output:
     tuple \

@@ -87,7 +87,7 @@ Although most of the tools for the pipeline should run without issue, you might 
 
 ## Step 1  - trimming, mapping and aligning
 
-This first script will take your raw reads, trim them for low-quality bases and remove any adapter sequences. It will then map them to a reference genome of your choice (default is the 2014 House sparrow reference). It also ensures that the samples are renamed to the correct name for all downstream analysis. Finally, the script will produce statistics on the mapping efficiency and depth of coverage of each mapped individual. Note that as of November 2024, the pipeline has been updated so that it only outputs [cram files](https://en.wikipedia.org/wiki/CRAM_(file_format)). 
+This first script will take your raw reads and run them through [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) for a quality assessment. It will then trim them for low-quality bases and remove any adapter sequences. It will then map them to a reference genome of your choice (default is the 2014 House sparrow reference). It also ensures that the samples are renamed to the correct name for all downstream analysis. Finally, the script will produce statistics on the mapping efficiency and depth of coverage of each mapped individual. Note that as of November 2024, the pipeline has been updated so that it only outputs [cram files](https://en.wikipedia.org/wiki/CRAM_(file_format)). 
 
 ### The input csv format
 
@@ -165,6 +165,8 @@ Once it has run, the script will only write outputs for the bams which exceeed t
 
 The second script in the pipeline will take a list of bamfiles and performs genotyping on all individuals. To do this, it uses `bcftools` and will call sites at every position in the genome (i.e. it calls invariant sites as well as variants). This is obviously a large job, especially on larger genomes. So to increase efficiency, the script parallelises across genome windows. The default is 10 Mb but you can set these to whatever size you wish. However, tweaking windows has to be done with a separate bash script (see below), not within the nextflow pipeline. After calling genotypes in windows, the script will take care of sorting and concatenating the windows together so that you are left with a vcf file for each chromosome, the mtDNA and also the unanchored scaffolds in your genome.
 
+**NB** as of November 2024, the pipeline has been adapted to use cramfiles instead of bamfiles as these are more efficient in terms of storage space. However, it is still possible to use the `2_call_variants.nf` script with bams if needed. Just point the script to the files and it will work.
+
 ### Setting up genome windows
 
 In order to parallelise across genome windows, the script requires a list of said windows in a text file. These are easy to generate using the helper script `0_create_genome_windows.sh`. This simple bash script uses bedtools to split the genome into windows of whatever size you wish (I recommend 10,000,000 bases for most bird genomes) and then it will also create separate files to account for all the scaffolds.
@@ -187,26 +189,26 @@ Running this script will produce a set of different files. The first will be tex
 
 **NB this script is only really tested on the house sparrow genome** - if it does not work for your genome, you will need to edit it. 
 
-### Creating a list of bams
+### Creating a list of crams
 
-The other input this script needs is a list of bamfiles. This is very simple - it is just a list of paths of the files that you intend to analyse. If you generated these using `1_trim_map_realign.nf` then the names should already be standardised as `samplename_realigned.bam`. Provided your bams are named this way, then the calling script will also ensure that the sample names are written into the final vcf. Here is an example of what the file should look like:
+The other input this script needs is a list of cramfiles. This is very simple - it is just a list of paths of the files that you intend to analyse. If you generated these using `1_trim_map_realign.nf` then the names should already be standardised as `samplename_realigned.cram`. Provided your crams are named this way, then the calling script will also ensure that the sample names are written into the final vcf. Here is an example of what the file should look like:
 
 ```
-/path/to/align/PDOMNOR8934547_realigned.bam
-/path/to/align/PDOMNOR8L19766_realigned.bam
-/path/to/align/PDOMNOR8L19786_realigned.bam
-/path/to/align/PDOMNOR8L52141_realigned.bam
-/path/to/align/PDOMNOR8L52830_realigned.bam
+/path/to/align/PDOMNOR8934547_realigned.cram
+/path/to/align/PDOMNOR8L19766_realigned.cram
+/path/to/align/PDOMNOR8L19786_realigned.cram
+/path/to/align/PDOMNOR8L52141_realigned.cram
+/path/to/align/PDOMNOR8L52830_realigned.cram
 ```
 
-Note that these bams do not need top be in the same directory and they do not need to be in a directory called align. This means you can call a vcf from bams in multiple locations easily. 
+Note that these crams do not need top be in the same directory and they do not need to be in a directory called align. This means you can call a vcf from crams in multiple locations easily. 
 
 ### Running the script
 
-Once you have your list of bams and genome windows file ready, you can run the script like this:
+Once you have your list of crams and genome windows file ready, you can run the script like this:
 
 ```
-nextflow run 2_call_variants.nf --bams bams.list --windows sparrow_genome_windows.list
+nextflow run 2_call_variants.nf --bams crams.list --windows sparrow_genome_windows.list
 ```
 
 As above, you can use the `--ref` option to set the location of a specific reference genome. Furthermore, as with all the scripts, you can use the `-resume` option to rerun from a checkpoint if it fails for any reason.
@@ -330,3 +332,16 @@ mv nextflow.config nextflow_config
 ```
 
 Just remember that when you do go back to submitting the nextflow script, you must change this back so that the pipeline will resume the slurm execution. 
+
+**NB** For group members and users on Saga, you can use the `run_genotype_pipeline_saga.slurm` as a guideline. I have included it on this repo as a template for others too. 
+
+## Generating a quality control report
+
+One aspect of the pipeline is that it is designed to produce outputs that can be easily summarised in a simple quality control report. For this, I recommend using `multiqc`. Once the pipeline is finished (or at any of the intermediate main three steps). 
+
+All you need to do is be in the directory you have run the genotyping pipeline in and then run the following:
+
+```
+multiqc .
+```
+
