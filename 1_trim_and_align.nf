@@ -56,8 +56,8 @@ process trimming {
 
     """
     ## run fastqc
-    fastqc -o ./ $f_read
-    fastqc -o ./ $r_read 
+    cat ${f_read} | fastqc -o ./ stdin:${f_read}
+    cat ${r_read} | fastqc -o ./ stdin:${r_read} 
 
     ## set the adapter fasta - need to find a way to change this
     ADAPT_FAST=${params.trim}/${adapter}.fa
