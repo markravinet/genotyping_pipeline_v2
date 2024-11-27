@@ -49,8 +49,8 @@ process trimming {
     path ("${new_sample}.R2.trim_pair.fastq.gz"), \
     path ("${new_sample}.R1.trim_unpair.fastq.gz"), \
     path ("${new_sample}.R2.trim_unpair.fastq.gz"), \
-    path ("${new_sample}.stats")
-    path ("${f_read}_fastqc.zip")
+    path ("${new_sample}.stats"), \
+    path ("${f_read}_fastqc.zip"), \
     path ("${r_read}_fastqc.zip")
 
 
@@ -83,8 +83,8 @@ process align {
     path("${sample}.R2.trim_pair.fastq.gz"), \
     path("${sample}.R1.trim_unpair.fastq.gz"), \
     path("${sample}.R2.trim_unpair.fastq.gz"), \
-    path("${sample}.stats")
-    path ("${f_read}_fastqc.zip")
+    path("${sample}.stats"), \
+    path ("${f_read}_fastqc.zip"), \
     path ("${r_read}_fastqc.zip")
 
     output:
