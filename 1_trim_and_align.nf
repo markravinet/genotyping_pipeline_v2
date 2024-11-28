@@ -45,12 +45,15 @@ process trimming {
     output:
     tuple \
     val(new_sample), \
+    path(f_read), \
+    path(r_read), \
     path("${new_sample}.R1.trim_pair.fastq.gz"), \
     path("${new_sample}.R2.trim_pair.fastq.gz"), \
     path("${new_sample}.R1.trim_unpair.fastq.gz"), \
     path("${new_sample}.R2.trim_unpair.fastq.gz"), \
-    path("${new_sample}.stats")
-
+    path("${new_sample}.stats"), \
+    path("${f_read}_fastqc.zip"), \
+    path("${r_read}_fastqc.zip")
 
     """
     ## run fastqc
@@ -77,11 +80,15 @@ process align {
     input:
     tuple \
     val(sample), \
+    path(f_read), \
+    path(r_read), \
     path("${sample}.R1.trim_pair.fastq.gz"), \
     path("${sample}.R2.trim_pair.fastq.gz"), \
     path("${sample}.R1.trim_unpair.fastq.gz"), \
     path("${sample}.R2.trim_unpair.fastq.gz"), \
-    path("${sample}.stats")
+    path("${sample}.stats"), \
+    path("${f_read}_fastqc.zip"), \
+    path("${r_read}_fastqc.zip")
 
     output:
     tuple \
