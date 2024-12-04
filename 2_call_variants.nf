@@ -43,7 +43,7 @@ process genotyping {
 
     input:
     path (bams)
-    path ploidyFile, optional: true
+    path ploidyFile
     each windows
 
     output:
@@ -157,7 +157,7 @@ process rename {
 workflow{    
     // set the reference genome from the command line:
     params.ref = "--ref"
-    genotyping(bams, windows) \
+    genotyping(bams, ploidyFile, windows) \
     | map { file ->
         def key = file.baseName.toString().tokenize(':').get(0)
         return tuple(key, file)
