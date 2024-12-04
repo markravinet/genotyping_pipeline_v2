@@ -220,16 +220,18 @@ In some cases, you might need to specify the ploidy of the chromosomes or scaffo
 The basic and easiest way to ensure mtDNA is called as haploid is to provide a file that looks like this in the case of the *Passer domesticus* genome:
 
 ```
-mtDNA 1 16809 1 
+mtDNA 1 16809 F 1
+mtDNA 1 16809 M 1
+
 ```
 
-This ploidy file is space delimited with the chromosome identity, the start position, the end position and the ploidy (where 1 = haploid, 2 = diploid). There is more info (here)[https://samtools.github.io/bcftools/bcftools.html#call] on this format. With the example above, the pipeline will assume all other chromosomes are diploid.
+This ploidy file is space delimited with the chromosome identity, the start position, the end position, sex, and the ploidy (where 1 = haploid, 2 = diploid). There is more info (here)[https://samtools.github.io/bcftools/bcftools.html#call] on this format. With the example above, the pipeline will assume all other chromosomes are diploid.
 
 You can then run the pipeline exactly as before but this time with the additional `--ploidyFile` option, e.g:
 
 ```
 nextflow run 2_call_variants.nf --bams bams.list --windows sparrow_genome_windows.list \
---ploidyFile my_ploidy_file.txt
+--ploidyFile my_ploidy_file.ploidy
 ```
 
 ### Script outputs
