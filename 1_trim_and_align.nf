@@ -45,19 +45,20 @@ process trimming {
     output:
     tuple \
     val(new_sample), \
-    path ("${new_sample}.R1.trim_pair.fastq.gz"), \
-    path ("${new_sample}.R2.trim_pair.fastq.gz"), \
-    path ("${new_sample}.R1.trim_unpair.fastq.gz"), \
-    path ("${new_sample}.R2.trim_unpair.fastq.gz"), \
-    path ("${new_sample}.stats")
-    path ("${f_read}_fastqc.zip")
-    path ("${r_read}_fastqc.zip")
-
+    path(f_read), \
+    path(r_read), \
+    path("${new_sample}.R1.trim_pair.fastq.gz"), \
+    path("${new_sample}.R2.trim_pair.fastq.gz"), \
+    path("${new_sample}.R1.trim_unpair.fastq.gz"), \
+    path("${new_sample}.R2.trim_unpair.fastq.gz"), \
+    path("${new_sample}.stats"), \
+    path("${f_read}_fastqc.zip"), \
+    path("${r_read}_fastqc.zip")
 
     """
     ## run fastqc
-    fastqc -o ./ $f_read
-    fastqc -o ./ $r_read 
+    zcat ${f_read} | fastqc -o ./ stdin:${f_read}.fastq.gz
+    zcat ${r_read} | fastqc -o ./ stdin:${r_read}.fastq.gz
 
     ## set the adapter fasta - need to find a way to change this
     ADAPT_FAST=${params.trim}/${adapter}.fa
@@ -79,13 +80,15 @@ process align {
     input:
     tuple \
     val(sample), \
+    path(f_read), \
+    path(r_read), \
     path("${sample}.R1.trim_pair.fastq.gz"), \
     path("${sample}.R2.trim_pair.fastq.gz"), \
     path("${sample}.R1.trim_unpair.fastq.gz"), \
     path("${sample}.R2.trim_unpair.fastq.gz"), \
-    path("${sample}.stats")
-    path ("${f_read}_fastqc.zip")
-    path ("${r_read}_fastqc.zip")
+    path("${sample}.stats"), \
+    path("${f_read}_fastqc.zip"), \
+    path("${r_read}_fastqc.zip")
 
     output:
     tuple \
