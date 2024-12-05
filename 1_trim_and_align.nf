@@ -211,7 +211,7 @@ process cram_convert {
     tuple val(sample), path("${sample}_dedup.bam"), path("${sample}_dedup.bai")
 
     output:
-    tuple val(sample), path("${sample}_dedup.cram"), path("${sample}_dedup.crai")
+    tuple val(sample), path("${sample}_dedup.cram"), path("${sample}_dedup.cram.crai")
 
     """
     samtools view -T ${params.ref} -C -o ${sample}_dedup.cram ${sample}_dedup.bam
@@ -228,18 +228,18 @@ process calc_stats {
     errorStrategy 'ignore'
 
     input:
-    tuple val(sample), path(bam), path(index)
+    tuple val(sample), path(cram), path(index)
 
     output:
     tuple path("${sample}_meancov.txt"), path("${sample}.map.stat.csv"), path("${sample}_flagstat.csv")
 
     """
     # work out mean coverage
-    STATS=\$(samtools depth ${bam} | awk '{sum += \$3} END {print sum / NR}' )
+    STATS=\$(samtools depth ${cram} | awk '{sum += \$3} END {print sum / NR}' )
     echo -e "${sample}\t\${STATS}" > ${sample}_meancov.txt
 
     # run flagstat
-    samtools flagstat ${bam} > ${sample}_flagstat.csv
+    samtools flagstat ${cram} > ${sample}_flagstat.csv
     # extract the columns that are wanted
     awk 'OFS="," {print \$1,\$3}' ${sample}_flagstat.csv > ${sample}.col.csv
     # add a header of the sample name
