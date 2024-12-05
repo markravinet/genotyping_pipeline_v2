@@ -27,8 +27,10 @@ Channel
 
 // ploidy file for genotyping
 if (!params.ploidyFile){
-    println "No ploidy file provided - all chromosomes to be called as diploid"
-    params.ploidyFile = null
+    println "No ploidy file provided - by default, all chromosomes will be called as diploid."
+    ploidyFile = file('default.ploidy')
+} else {
+    ploidyFile = file(params.ploidyFile)
 }
 
 // View results (to test)
@@ -43,43 +45,24 @@ process genotyping {
 
     input:
     path (bams)
-    path ploidyFile, optional: true
+    path ploidyFile
     each windows
 
     output:
     path ("${windows}.vcf.gz")
 
-    script:
-    if (ploidyFile == null){
-        """
-        echo "Calling with default ploidy"
-        if [[ "${windows}" == "scaff"* ]];
-        then
-            # if window is a scaffold
-            bcftools mpileup -d 8000 --ignore-RG -R ${baseDir}/${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
-            | bcftools call -f GQ,GP -mO z -o ${windows}.vcf.gz
-        else
-            # for normal genome windows
-            bcftools mpileup -d 8000 --ignore-RG -r ${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
-            | bcftools call -f GQ,GP -mO z -o ${windows}.vcf.gz
-        fi
-        """
-    } else {
-        """
-        echo "Calling with specified ploidy"
-        if [[ "${windows}" == "scaff"* ]];
-        then
-            # if window is a scaffold
-            bcftools mpileup -d 8000 --ignore-RG -R ${baseDir}/${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
-            | bcftools call --ploidy-file ${ploidyFile} -f GQ,GP -mO z -o ${windows}.vcf.gz
-        else
-            # for normal genome windows
-            bcftools mpileup -d 8000 --ignore-RG -r ${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
-            | bcftools call --ploidy-file ${ploidyFile} -f GQ,GP -mO z -o ${windows}.vcf.gz
-        fi
-        """
-    }
-  
+    """
+    if [[ "${windows}" == "scaff"* ]];
+    then
+        # if window is a scaffold
+        bcftools mpileup -d 8000 --ignore-RG -R ${baseDir}/${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
+        | bcftools call --ploidy-file ${ploidyFile} -f GQ,GP -mO z -o ${windows}.vcf.gz
+    else
+        # for normal genome windows
+        bcftools mpileup -d 8000 --ignore-RG -r ${windows} -a AD,DP,SP -Ou -f ${params.ref} -b ${bams} \
+        | bcftools call --ploidy-file ${ploidyFile} -f GQ,GP -mO z -o ${windows}.vcf.gz
+    fi
+    """
 }
 
 // concat - based on key value
@@ -157,7 +140,7 @@ process rename {
 workflow{    
     // set the reference genome from the command line:
     params.ref = "--ref"
-    genotyping(bams, windows) \
+    genotyping(bams, ploidyFile, windows) \
     | map { file ->
         def key = file.baseName.toString().tokenize(':').get(0)
         return tuple(key, file)
