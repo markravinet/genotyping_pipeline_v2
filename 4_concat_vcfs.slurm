@@ -1,44 +1,45 @@
 #!/bin/bash
 
-# Job name:
+# Admin:
 #SBATCH --job-name=concat_vcf
+#SBATCH --output=/cluster/work/users/eriksro/pdom_india/logs/SLURM-%j-%x.out
+#SBATCH --error=/cluster/work/users/eriksro/pdom_india/logs/SLURM-%j-%x.err
+#SBATCH --account=nn10082k
 
-# partition/queue job being run on
-#SBATCH --partition=defq
-
-# number of nodes
+# Resource allocation:
 #SBATCH --nodes=1
-
-# tasks per node
 #SBATCH --ntasks-per-node=1
-
-# cpus-per-task
 #SBATCH --cpus-per-task=8
-
-# memory - max memory job can use
 #SBATCH --mem=12g
+#SBATCH --time=02:00:00
 
-# total time - i.e. wallclock limit - how long job has to run
-#SBATCH --time=24:00:00
+# User variables
+PIPELINE_REPOSITORY_DIR=/path/to/pipeline/repository
+VCF_LIST=/path/to/list/of/vcf/files/to/concatenate
+OUTPUT_VCF=vcf_concat/NAME_HERE.vcf.gz
+OUTPUT_VCF_NORM=vcf_concat/NAME_HERE_norm.vcf.gz
 
-# notify job failure
-#SBATCH --mail-user=mark.ravinet@nottingham.ac.uk
-#SBATCH --mail-type=FAIL
+# Prepare environment
+set -o errexit
+set -o nounset
+module --quiet purge
 
-## set up job environment
+# Load modules
+module load BCFtools/1.19-GCC-13.2.0
+module list
 
-# define variables - nb TARGET is defined from command line
-VCF_FILE=/path/to/list/of/vcfs
-OUTPUT_VCF1=/nextflow_workdir/vcf/sparrows_variants.vcf.gz
-OUTPUT_VCF2=/nextflow_workdir/vcf/sparrows_variants_norm.vcf.gz
+# Work in Nextflow pipeline directory
+cd $PIPELINE_REPOSITORY_DIR
 
-# concat vcfs
-bcftools concat -f $VCF_FILE --threads 8 -n -O z -o $OUTPUT_VCF1
+if [ ! -e vcf_concat/ ]
+then
+    mkdir vcf_concat
+fi
 
-# index the sorted vcf1
-bcftools index $OUTPUT_VCF1
+# Concatenate and index VCFs
+bcftools concat -f $VCF_LIST --threads 8 -n -O z -o $OUTPUT_VCF
+bcftools index $OUTPUT_VCF
 
-# next normalise
-bcftools norm -d none -O z -o $OUTPUT_VCF2 $OUTPUT_VCF1
-
-bcftools index $OUTPUT_VCF2
+# Next, normalise
+bcftools norm -d none -O z -o $OUTPUT_VCF_NORM $OUTPUT_VCF
+bcftools index $OUTPUT_VCF_NORM
