@@ -5,7 +5,8 @@
 # set variables
 REF_IDX=$1
 WINDOW=$2
-OUTPUT=$3
+SCAFFOLD_NAME=$3
+OUTPUT=$4
 # REF_IDX=/share/Passer/data/reference/house_sparrow_ref.fa.fai
 # WINDOW=10000000
 # OUTPUT=sparrow_genome_windows.list
@@ -15,7 +16,7 @@ cut -f 1-2 ${REF_IDX} > genome_size.txt
 
 # make the windows and cat together
 bedtools makewindows -g genome_size.txt -w ${WINDOW} | \
-grep -v "scaffold" | awk '{print $1":"$2"-"$3}' \
+grep -v ${SCAFFOLD_NAME} | awk '{print $1":"$2"-"$3}' \
 > $OUTPUT
 
 # GATK will fail if the coords include 0, so edit to start from 1
@@ -25,7 +26,7 @@ sed -i_bak 's/:0-/:1-/g' $OUTPUT
 
 # for scaffolds
 bedtools makewindows -g genome_size.txt -w ${WINDOW} | \
-grep "scaffold" | awk '{print $1":"$2"-"$3}' \
+grep ${SCAFFOLD_NAME} | awk '{print $1":"$2"-"$3}' \
 > scaffolds.list
 
 # GATK will fail if the coords include 0, so edit to start from 1
