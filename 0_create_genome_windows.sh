@@ -24,7 +24,7 @@ sed -i_bak 's/:0-/:1-/g' $OUTPUT
 # creates 115 genome windows
 
 # for scaffolds
-bedtools makewindows -g genome_size.txt -w 10000000 | \
+bedtools makewindows -g genome_size.txt -w ${WINDOW} | \
 grep "scaffold" | awk '{print $1":"$2"-"$3}' \
 > scaffolds.list
 
@@ -42,6 +42,10 @@ num_files=10
 # Split the actual file, maintaining lines.
 split -d --lines=${lines_per_file} scaffolds.list2 scaffolds:
 
-# add scafs to windows list
-for i in scaffolds:*; do echo $i; done >> $OUTPUT
+# add scafs to windows list only if any exist
+n_scaffolds=$(ls scaffolds:* | wc -l)
 
+if [ ${n_scaffolds} -gt 0 ]
+then
+    for i in scaffolds:*; do echo $i; done >> $OUTPUT
+fi
