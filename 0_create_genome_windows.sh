@@ -24,7 +24,7 @@ sed -i_bak 's/:0-/:1-/g' $OUTPUT
 # creates 115 genome windows
 
 # for scaffolds
-bedtools makewindows -g genome_size.txt -w 10000000 | \
+bedtools makewindows -g genome_size.txt -w ${WINDOW} | \
 grep "scaffold" | awk '{print $1":"$2"-"$3}' \
 > scaffolds.list
 
