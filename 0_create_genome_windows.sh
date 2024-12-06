@@ -42,6 +42,10 @@ num_files=10
 # Split the actual file, maintaining lines.
 split -d --lines=${lines_per_file} scaffolds.list2 scaffolds:
 
-# add scafs to windows list
-for i in scaffolds:*; do echo $i; done >> $OUTPUT
+# add scafs to windows list only if any exist
+n_scaffolds=$(ls scaffolds:* | wc -l)
 
+if [ ${n_scaffolds} -gt 0 ]
+then
+    for i in scaffolds:*; do echo $i; done >> $OUTPUT
+fi
