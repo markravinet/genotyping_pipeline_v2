@@ -129,21 +129,21 @@ process align {
     ### MAP PAIRED
     echo "Aligning ${sample} paired reads"
     # run the alignment on paired reads
-    bwa mem -M -t 16 -R "\${READGROUP}" ${params.ref} ${sample}.R1.trim_pair.fastq.gz ${sample}.R2.trim_pair.fastq.gz \
+    bwa mem -M -t ${task.cpus} -R "\${READGROUP}" ${params.ref} ${sample}.R1.trim_pair.fastq.gz ${sample}.R2.trim_pair.fastq.gz \
     | samtools view -b | samtools sort -T ${sample} > ${sample}_pair.bam
 
 
     ### MAP UNPAIR FORWARD
     echo "Aligning ${sample} unpaired forward reads."
     # run alignment
-    bwa mem -M -t 16 -R "\${READGROUP}" ${params.ref} ${sample}.R1.trim_unpair.fastq.gz \
+    bwa mem -M -t ${task.cpus} -R "\${READGROUP}" ${params.ref} ${sample}.R1.trim_unpair.fastq.gz \
     | samtools view -b | samtools sort -T ${sample} > ${sample}_F_unpair.bam
 
 
     ### MAP UNPAIR REVERSE
     echo "Aligning ${sample} unpaired reverse reads."
     # run alignment
-    bwa mem -M -t 16 -R "\${READGROUP}" ${params.ref} ${sample}.R2.trim_unpair.fastq.gz \
+    bwa mem -M -t ${task.cpus} -R "\${READGROUP}" ${params.ref} ${sample}.R2.trim_unpair.fastq.gz \
     | samtools view -b | samtools sort -T ${sample} > ${sample}_R_unpair.bam
 
     """
