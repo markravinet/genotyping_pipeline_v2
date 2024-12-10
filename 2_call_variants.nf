@@ -87,7 +87,7 @@ process vcf_concat {
 }
 
 // normalise vcf
-process norm {
+process vcf_normalise {
 
     publishDir 'vcf', saveAs: { filename -> "$filename" }
 
@@ -111,7 +111,7 @@ process norm {
 }
 
 // reheader vcf
-process rename {
+process vcf_reheader {
 
     publishDir 'vcf', saveAs: { filename -> "$filename" }
 
@@ -146,5 +146,5 @@ workflow{
         return tuple(key, file)
       }
     | groupTuple( by:0,sort:true ) \
-    | vcf_concat | norm | rename
+    | vcf_concat | vcf_normalise | vcf_reheader
 }
