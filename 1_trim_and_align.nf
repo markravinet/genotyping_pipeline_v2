@@ -214,8 +214,8 @@ process cram_convert {
     tuple val(sample), path("${sample}_dedup.cram"), path("${sample}_dedup.cram.crai")
 
     """
-    samtools view -T ${params.ref} -C -o ${sample}_dedup.cram ${sample}_dedup.bam
-    samtools index ${sample}_dedup.cram 
+    samtools view -@ ${task.cpus} -T ${params.ref} -C -o ${sample}_dedup.cram ${sample}_dedup.bam
+    samtools index -@ ${task.cpus} ${sample}_dedup.cram 
     """
 }
 
