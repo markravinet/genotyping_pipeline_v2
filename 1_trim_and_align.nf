@@ -173,7 +173,7 @@ process merge_sort {
     samtools merge -rf -@ ${task.cpus} ${sample}_merge.bam ${bam_list}
     # sort
     echo "Sorting merged bam for ${sample}"
-    samtools sort -T -@ ${task.cpus} ${sample}_tmp -o ${sample}_merge_sort.bam ${sample}_merge.bam
+    samtools sort -@ ${task.cpus} -T ${sample}_tmp -o ${sample}_merge_sort.bam ${sample}_merge.bam
     """
 
 }
