@@ -63,7 +63,7 @@ process trimming {
     ## set the adapter fasta - need to find a way to change this
     ADAPT_FAST=${params.trim}/${adapter}.fa
     ## run trimmometic
-    trimmomatic PE $f_read $r_read \
+    trimmomatic PE -threads ${task.cpus} $f_read $r_read \
     ${new_sample}.R1.trim_pair.fastq.gz ${new_sample}.R1.trim_unpair.fastq.gz \
     ${new_sample}.R2.trim_pair.fastq.gz ${new_sample}.R2.trim_unpair.fastq.gz \
     ILLUMINACLIP:\${ADAPT_FAST}:2:30:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:5:10 MINLEN:50 \
