@@ -239,7 +239,7 @@ process calc_stats {
     echo -e "${sample}\t\${STATS}" > ${sample}_meancov.txt
 
     # run flagstat
-    samtools flagstat ${cram} > ${sample}_flagstat.csv
+    samtools flagstat -@ ${task.cpus} ${cram} > ${sample}_flagstat.csv
     # extract the columns that are wanted
     awk 'OFS="," {print \$1,\$3}' ${sample}_flagstat.csv > ${sample}.col.csv
     # add a header of the sample name
