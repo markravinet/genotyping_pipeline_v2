@@ -170,10 +170,10 @@ process merge_sort {
     ### MERGE SAMPLES
     echo "Merging bams for ${sample}"
     # merge
-    samtools merge -rf ${sample}_merge.bam ${bam_list}
+    samtools merge -rf -@ ${task.cpus} ${sample}_merge.bam ${bam_list}
     # sort
     echo "Sorting merged bam for ${sample}"
-    samtools sort -T ${sample}_tmp -o ${sample}_merge_sort.bam ${sample}_merge.bam
+    samtools sort -T -@ ${task.cpus} ${sample}_tmp -o ${sample}_merge_sort.bam ${sample}_merge.bam
     """
 
 }
